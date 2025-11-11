@@ -1,0 +1,39 @@
+{
+    "name": "drop-protocol/core",
+    "description": "DROP Protocol - Device Rotating Optimized Protocol for secure session management",
+    "type": "library",
+    "keywords": [
+        "session",
+        "authentication",
+        "security",
+        "rotating-sessions",
+        "httponly",
+        "csrf-protection",
+        "xss-prevention"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Strabe",
+            "email": "strabelabs@proton.me"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "ext-json": "*"
+    },
+    "suggest": {
+        "ext-redis": "Required for RedisStorage implementation"
+    },
+    "autoload": {
+        "psr-4": {
+            "DropProtocol\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
