@@ -1,41 +1,32 @@
 <?php
-
 declare(strict_types=1);
 
 namespace DropProtocol;
 
-use DropProtocol\Contracts\StorageInterface;
-use DropProtocol\Services\SessionService;
-use DropProtocol\Services\SecurityValidator;
 use DropProtocol\Configuration\DropProtocolConfig;
+use DropProtocol\Contracts\CookieManagerInterface;
+use DropProtocol\Contracts\StorageInterface;
 use DropProtocol\Exceptions\InvalidSessionException;
 use DropProtocol\Exceptions\SecurityViolationException;
 use DropProtocol\Exceptions\SessionLimitException;
+use DropProtocol\Services\NativeCookieManager;
+use DropProtocol\Services\SecurityValidator;
+use DropProtocol\Services\SessionService;
 
-/**
- * DROP Protocol Service - Device Rotating Optimized Protocol
- * 
- * Secure session management with automatic rotation, HttpOnly cookies,
- * and optional IP/User-Agent validation.
- * 
- * Features:
- * - Automatic session rotation based on configurable threshold
- * - HttpOnly cookie-based authentication
- * - Multi-device session support with limits
- * - Sliding expiration
- * - Security violation detection
- */
-final class DropProtocolService
+class DropProtocolService
 {
     private StorageInterface $storage;
     private DropProtocolConfig $config;
+    private CookieManagerInterface $cookieManager;
 
     public function __construct(
         StorageInterface $storage,
-        DropProtocolConfig $config
+        DropProtocolConfig $config,
+        ?CookieManagerInterface $cookieManager = null
     ) {
         $this->storage = $storage;
         $this->config = $config;
+        $this->cookieManager = $cookieManager ?? new NativeCookieManager();
     }
 
     /**
@@ -276,7 +267,7 @@ final class DropProtocolService
     {
         $options = $this->config->getCookieOptions();
 
-        setcookie(
+        $this->cookieManager->setCookie(
             $this->config->getCookieName(),
             $sessionId,
             [
@@ -290,6 +281,11 @@ final class DropProtocolService
         );
     }
 
+    public function getCookieManager(): CookieManagerInterface
+    {
+        return $this->cookieManager;
+    }
+
     /**
      * Clear session cookie
      *
@@ -299,7 +295,7 @@ final class DropProtocolService
     {
         $options = $this->config->getCookieOptions();
 
-        setcookie(
+        $this->cookieManager->setCookie(
             $this->config->getCookieName(),
             '',
             [
