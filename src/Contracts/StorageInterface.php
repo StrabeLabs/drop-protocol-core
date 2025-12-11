@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace DropProtocol\Contracts;
@@ -45,7 +46,7 @@ interface StorageInterface
      * @return void
      */
     public function deleteUserSessions(string $userId): void;
-    
+
     /**
      * Update session TTL and activity timestamp
      *
@@ -54,7 +55,7 @@ interface StorageInterface
      * @return void
      */
     public function touch(string $sessionId, int $ttl): void;
-    
+
     /**
      * Atomically rotate session ID
      * 
@@ -69,7 +70,7 @@ interface StorageInterface
      * @return bool True if rotation succeeded, false otherwise
      */
     public function rotateAtomic(string $oldId, string $newId, string $userId, array $data, int $ttl): bool;
-    
+
     /**
      * Count active sessions for a user
      *
@@ -77,4 +78,13 @@ interface StorageInterface
      * @return int Number of active sessions
      */
     public function countUserSessions(string $userId): int;
+
+    /**
+     * Update user data in an existing session
+     *
+     * @param string $sessionId Session identifier
+     * @param array $userData New user data to merge/replace
+     * @return bool True if update succeeded, false if session not found
+     */
+    public function updateUserData(string $sessionId, array $userData): bool;
 }

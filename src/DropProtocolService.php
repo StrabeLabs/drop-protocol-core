@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace DropProtocol;
@@ -88,7 +89,7 @@ class DropProtocolService
      */
     public function validate(): array
     {
-        $sessionId = $_COOKIE[$this->config->getCookieName()] ?? null;
+        $sessionId = $this->getSessionIdFromCookie();
 
         if (!$sessionId) {
             throw new InvalidSessionException('No session cookie found');
@@ -182,7 +183,7 @@ class DropProtocolService
      */
     public function logout(): void
     {
-        $sessionId = $_COOKIE[$this->config->getCookieName()] ?? null;
+        $sessionId = $this->getSessionIdFromCookie();
 
         if ($sessionId) {
             $this->storage->delete($sessionId);
@@ -198,7 +199,7 @@ class DropProtocolService
      */
     public function logoutAll(): void
     {
-        $sessionId = $_COOKIE[$this->config->getCookieName()] ?? null;
+        $sessionId = $this->getSessionIdFromCookie();
 
         if ($sessionId) {
             $data = $this->storage->retrieve($sessionId);
@@ -217,7 +218,7 @@ class DropProtocolService
      */
     public function getActiveSessionCount(): int
     {
-        $sessionId = $_COOKIE[$this->config->getCookieName()] ?? null;
+        $sessionId = $this->getSessionIdFromCookie();
 
         if (!$sessionId) {
             return 0;
@@ -255,6 +256,38 @@ class DropProtocolService
     public function isAuthenticated(): bool
     {
         return $this->getUserId() !== null;
+    }
+
+    /**
+     * Update user data in current session
+     *
+     * @param array $userData New user data to store
+     * @return bool True if update succeeded
+     * @throws InvalidSessionException If no active session
+     */
+    public function updateSessionUserData(array $userData): bool
+    {
+        $sessionId = $this->getSessionIdFromCookie();
+
+        if (!$sessionId) {
+            throw new InvalidSessionException('No session cookie found');
+        }
+
+        return $this->storage->updateUserData($sessionId, $userData);
+    }
+
+    /**
+     * Get session ID from cookie (AMPHP compatible)
+     *
+     * @return string|null Session ID or null if not found
+     */
+    private function getSessionIdFromCookie(): ?string
+    {
+        if ($this->cookieManager instanceof \DropProtocol\Amphp\Services\AmphpCookieManager) {
+            return $this->cookieManager->getRequestCookie($this->config->getCookieName());
+        }
+        
+        return $_COOKIE[$this->config->getCookieName()] ?? null;
     }
 
     /**

@@ -151,6 +151,27 @@ final class MemoryStorage implements StorageInterface
         return isset($this->userSessions[$userId]) ? count($this->userSessions[$userId]) : 0;
     }
 
+    public function updateUserData(string $sessionId, array $userData): bool
+    {
+        $this->cleanup();
+
+        if (!isset($this->sessions[$sessionId])) {
+            return false;
+        }
+
+        $session = $this->sessions[$sessionId];
+
+        if ($session['expires_at'] < time()) {
+            unset($this->sessions[$sessionId]);
+            return false;
+        }
+
+        $this->sessions[$sessionId]['data']['user_data'] = $userData;
+        $this->sessions[$sessionId]['last_activity'] = time();
+
+        return true;
+    }
+
     /**
      * Remove expired sessions
      *
